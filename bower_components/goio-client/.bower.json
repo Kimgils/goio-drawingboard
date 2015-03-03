@@ -1,0 +1,14 @@
+{
+  "name": "goio-client",
+  "homepage": "https://github.com/Kimgils/goio-client",
+  "_release": "9b07398e91",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "9b07398e9170cb69fc32ec06bf04136814bb0302"
+  },
+  "_source": "git://github.com/Kimgils/goio-client.git",
+  "_target": "*",
+  "_originalSource": "goio-client",
+  "_direct": true
+}

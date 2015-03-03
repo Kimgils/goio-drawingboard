@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>
+			goio drawing
+		</title>
+		<link rel="stylesheet" href="bower_components/drawingboard.js/css/drawingboard.css">
+		<script src="bower_components/jquery/dist/jquery.min.js"></script>
+		<script src="bower_components/drawingboard.js/dist/drawingboard.js"></script>
+		<script src="bower_components/jquery-ajaxtransport-xdomainrequest/jquery.xdomainrequest.min.js"></script>
+		<script src="bower_components/goio-client/goio.js"></script>
+	</head>
+	<body>
+		<style>
+			section {
+				width: 500px;
+				margin: 0 auto;
+			}
+			#board {
+				width: 100%;
+				height: 300px;
+			}
+		</style>	
+		<section>
+			<div id="board">
+			
+			</div>
+		</section>
+		<script>
+			$(document).ready(function(){
+				var roomId;
+
+				var board = new DrawingBoard.Board("board", {
+					webStorage: false
+				});
+				board.setImg("test.png");
+				var goio = GoIO.init({api: "http://test.com:9999"}).io;
+				goio.initialize(+new Date());
+
+				roomId = "drawApp";
+				goio.join(roomId, function(){
+					goio.on(roomId, "drawBegin", function(sender, data){
+						board.setImg(data.data);
+					});
+
+					goio.on(roomId, "drawing", function(sender, data){
+						board.setImg(data.data);
+					});
+
+					goio.on(roomId, "drawEnd", function(sender, data){
+						board.setImg(data.data);
+					});
+
+					//Drawer
+					var lock = true, times = 5;
+					board.ev.bind('board:startDrawing', function(ev){
+						lock = false;
+						goio.emit(roomId, 'drawBegin', {data: board.getImg()});
+					});
+
+					var count = 0;
+					board.ev.bind('board:drawing', function(ev){
+						count++;
+						if(0 === count % 2) {
+							return;
+						}
+
+						if( ! lock && !times--) {
+							console.count();
+							goio.emit(roomId, 'drawing', {data: board.getImg()});
+						}
+					});
+
+					board.ev.bind('board:stopDrawing', function(){
+						lock = true;
+						times = 5;
+						goio.emit(roomId, 'drawEnd', {data: board.getImg()});
+					});
+				});
+			});
+		</script>
+	</body>
+</html>
