@@ -17,46 +17,56 @@
 				width: 500px;
 				margin: 0 auto;
 			}
-			#board {
+			.wrapper {
 				width: 100%;
 				height: 300px;
 			}
 		</style>	
 		<section>
-			<div id="board">
+			<div class="wrapper" id="board-background"></div>
+			<div class="wrapper" id="board">
 			
 			</div>
 		</section>
 		<script>
 			$(document).ready(function(){
-				var roomId;
+				var i, j, roomId, board, background, $bCanvas;
 
-				var board = new DrawingBoard.Board("board", {
+				background = new DrawingBoard.Board('board-background', {
+					background: "img/test.png",
+					controls: false,
 					webStorage: false
 				});
-				board.setImg("test.png");
-				var goio = GoIO.init({api: "http://test.com:9999"}).io;
+
+				board = new DrawingBoard.Board('board', {
+					webStorage: false,
+					parasite: background
+				});
+
+				// board.setImg("test.png");
+				var goio = GoIO.init({api: "http://v4.com:9999"}).io;
 				goio.initialize(+new Date());
 
 				roomId = "drawApp";
 				goio.join(roomId, function(){
-					goio.on(roomId, "drawBegin", function(sender, data){
-						board.setImg(data.data);
+					goio.on(roomId, "drawBegin", function(sender, ev){
+						background._onInputStart(null, ev.coords);
 					});
 
-					goio.on(roomId, "drawing", function(sender, data){
-						board.setImg(data.data);
+					goio.on(roomId, "drawing", function(sender, ev){
+						background._onInputMove(null, ev.coords);
 					});
 
-					goio.on(roomId, "drawEnd", function(sender, data){
-						board.setImg(data.data);
+					goio.on(roomId, "drawEnd", function(sender, ev){
+						background._onInputStop(null, ev.coords);
 					});
 
 					//Drawer
 					var lock = true, times = 5;
 					board.ev.bind('board:startDrawing', function(ev){
 						lock = false;
-						goio.emit(roomId, 'drawBegin', {data: board.getImg()});
+						goio.emit(roomId, 'drawBegin', {coords: ev.coords});
+						background._onInputStart(null, ev.coords);						
 					});
 
 					var count = 0;
@@ -66,16 +76,18 @@
 							return;
 						}
 
-						if( ! lock && !times--) {
-							console.count();
-							goio.emit(roomId, 'drawing', {data: board.getImg()});
+						if( ! lock && ! times--) {
+							background._onInputMove(null, ev.coords);
+							goio.emit(roomId, 'drawing', {coords: ev.coords});
+							times = 5;
 						}
 					});
 
-					board.ev.bind('board:stopDrawing', function(){
+					board.ev.bind('board:stopDrawing', function(ev){
 						lock = true;
 						times = 5;
-						goio.emit(roomId, 'drawEnd', {data: board.getImg()});
+						background._onInputStop(null, ev.coords);
+						goio.emit(roomId, 'drawEnd', {coords: ev.coords});
 					});
 				});
 			});

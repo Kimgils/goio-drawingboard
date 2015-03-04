@@ -695,10 +695,6 @@ DrawingBoard.Board.prototype = {
 			this._onInputMove(e, this._getInputCoords(e) );
 		}, this));
 
-		this.dom.$canvas.on('mousemove', $.proxy(function(e) {
-
-		}, this));
-
 		this.dom.$canvas.on('mouseup touchend', $.proxy(function(e) {
 			this._onInputStop(e, this._getInputCoords(e) );
 		}, this));
@@ -754,8 +750,11 @@ DrawingBoard.Board.prototype = {
 		if (!window.requestAnimationFrame) this.draw();
 
 		this.ev.trigger('board:startDrawing', {e: e, coords: coords});
-		e.stopPropagation();
-		e.preventDefault();
+
+		if(e) {
+			e.stopPropagation();
+			e.preventDefault();
+		}
 	},
 
 	_onInputMove: function(e, coords) {
@@ -764,12 +763,16 @@ DrawingBoard.Board.prototype = {
 
 		if (!window.requestAnimationFrame) this.draw();
 
-		e.stopPropagation();
-		e.preventDefault();
+		if(e) {
+			e.stopPropagation();
+			e.preventDefault();
+		}
 	},
 
 	_onInputStop: function(e, coords) {
-		if (this.isDrawing && (!e.touches || e.touches.length === 0)) {
+		//@todo
+		// if (this.isDrawing && (!e.touches || e.touches.length === 0)) {
+		if (this.isDrawing) {
 			this.isDrawing = false;
 
 			this.saveWebStorage();
@@ -777,8 +780,11 @@ DrawingBoard.Board.prototype = {
 
 			this.ev.trigger('board:stopDrawing', {e: e, coords: coords});
 			this.ev.trigger('board:userAction');
-			e.stopPropagation();
-			e.preventDefault();
+
+			if(e) {
+				e.stopPropagation();
+				e.preventDefault();
+			}
 		}
 	},
 
